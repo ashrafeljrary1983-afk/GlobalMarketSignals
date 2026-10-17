@@ -1,0 +1,2 @@
+# GlobalMarketSignals
+GlobalMarketSignls binary option 
