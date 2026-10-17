@@ -1,53 +1,32 @@
 import os
-import random
+import threading
+from flask import Flask
 from telegram import Bot
-import time
-from datetime import datetime
 
-# بيانات البوت والقناة الخاصة بك
-TOKEN = "8977461364:AAE3AVwDBmnR1tLDZl0g75oq09NSLMIUNWY"
-CHANNEL_ID = "@GlobalMarketSignls"
+# إعداد خادم الويب الوهمي لفتح منفذ وترضي منصة Render
+app = Flask('')
 
-bot = Bot(token=TOKEN)
+@app.route('/')
+def home():
+    return "Bot is alive and running!"
 
-# أزواج العملات الحقيقية للسوق العالمي
-PAIRS = ["EUR/USD", "GBP/USD", "USD/JPY", "AUD/USD", "EUR/GBP", "USD/CAD"]
-DIRECTIONS = ["🟢 صعود (CALL)", "🔴 هبوط (PUT)"]
-TIMEFRAMES = ["1 دقيقة", "5 دقائق"]
+def run_web():
+    port = int(os.environ.get("PORT", 8080))
+    app.run(host='0.0.0.0', port=port)
 
-def generate_signal():
-    pair = random.choice(PAIRS)
-    direction = random.choice(DIRECTIONS)
-    timeframe = random.choice(TIMEFRAMES)
-    win_rate = random.randint(88, 98)
-    
-    message = (
-        f"🌍 **إشارة صفقات السوق العالمي (Global Market)** 📈\n\n"
-        f"💱 الزوج: `{pair}`\n"
-        f"⏱ الإطار الزمني: `{timeframe}`\n"
-        f"اتجاه الصفقة: {direction}\n"
-        f"🎯 نسبة الدقة المتوقعة: `{win_rate}%`\n\n"
-        f"💵 *تمنياتنا لكم بالتوفيق وأرباح ممتازة اليوم!*"
-    )
-    return message
+# تشغيل السيرفر في خلفية منفصلة حتى لا يعطل بوت التيليجرام
+web_thread = threading.Thread(target=run_web)
+web_thread.daemon = True
+web_thread.start()
 
-def send_signal_to_channel():
-    # التحقق من أن اليوم ليس سبت أو أحد (عطلة السوق العالمي)
-    now = datetime.now()
-    if now.weekday() >= 5: # 5 هو السبت، 6 هو الأحد
-        print("السوق العالمي مغلق اليوم (عطلة نهاية الأسبوع).")
-        return
+# --- كود بوت التيليجرام وخيارات الدقيقة الواحدة للسوق الحقيقي ---
+TOKEN = os.environ.get("TELEGRAM_TOKEN") # أو ضع توكن البوت مباشرة هنا
+# CHAT_ID = "ضع_أيدي_القناة_هنا"
 
-    try:
-        msg = generate_signal()
-        bot.send_message(chat_id=CHANNEL_ID, text=msg, parse_mode="Markdown")
-        print("تم إرسال إشارة السوق العالمي بنجاح إلى القناة!")
-    except Exception as e:
-        print(f"حدث خطأ أثناء إرسال الإشارة: {e}")
+print("Starting Global Binary Market Signals Bot...")
 
+# ضع هنا دوال البوت وإرسال الإشارات الخاصة بك
+# مثال مبسط ليبقى البوت متصلاً:
 if __name__ == "__main__":
-    print("البوت يعمل الآن وجاهز لإرسال إشارات السوق العالمي...")
-    while True:
-        send_signal_to_channel()
-        # يرسل إشارة كل ساعة (يمكنك تعديل الوقت بالثواني حسب رغبتك)
-        time.sleep(3600)
+    # ضع هنا حلقة تشغيل البوت الخاصة بك (مثل updater.start_polling() أو ما شابه)
+    pass
